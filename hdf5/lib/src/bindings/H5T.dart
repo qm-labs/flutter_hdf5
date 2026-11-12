@@ -367,7 +367,7 @@ class H5TBindings {
       throw Exception('Failed to get member name');
     }
 
-    String memberName = charToString(memberNamePtr);
+    String memberName = charToName(memberNamePtr);
     __freeMemory(memberNamePtr);
     return memberName;
   }

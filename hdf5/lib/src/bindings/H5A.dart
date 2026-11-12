@@ -77,7 +77,7 @@ class H5ABindings {
     logger.fine('Opened attribute with the id $id');
     if (id < 0) {
       logger.severe(
-          'Failed to open attribute with name ${charToString(attr_name)} at the id $id');
+          'Failed to open attribute with name ${charToName(attr_name)} at the id $id');
       throw Exception("Failed to open attribute");
     }
     return id;
@@ -119,14 +119,14 @@ class H5ABindings {
     final status = __getNameByIdx(loc_id, obj_name, H5_INDEX_NAME, H5_ITER_INC,
         attr_idx, name, attrSize + 1, H5P_DEFAULT);
     logger.fine(
-        "Attribute name status: $status for index $attr_idx of $loc_id (name == ${charToString(name)})");
+        "Attribute name status: $status for index $attr_idx of $loc_id (name == ${charToName(name)})");
     if (status < 0) {
       logger.severe(
           "Failed to get attribute name by index for index $attr_idx of $loc_id");
       throw Exception("Failed to get attribute name by index");
     }
 
-    final attrName = charToString(name);
+    final attrName = charToName(name);
     calloc.free(name);
     return attrName;
   }

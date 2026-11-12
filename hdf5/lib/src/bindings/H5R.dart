@@ -80,7 +80,7 @@ class H5RBindings {
       throw Exception('Failed to get name');
     }
 
-    final result = charToString(name);
+    final result = charToName(name);
     calloc.free(name);
     return result;
   }

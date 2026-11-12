@@ -5,15 +5,24 @@ import 'dart:convert';
 import 'package:ffi/ffi.dart';
 import 'package:hdf5/src/bindings/H5T.dart';
 
+/// Returns [string] as a null-terminated UTF-8 C string (free with calloc.free).
+///
+/// HDF5 expects UTF-8 for file names (on Windows it converts them to UTF-16
+/// before opening the file) and for object and attribute names.
 Pointer<Uint8> strToChar(String string) {
-  Pointer<Uint8> stringPtr = calloc<Uint8>(string.length + 1);
-  Uint8List stringList = Uint8List.fromList(string.codeUnits);
-
-  for (var i = 0; i < stringList.length; i++) {
-    stringPtr[i] = stringList[i];
-  }
-  stringPtr[stringList.length] = 0; // terminate with null.
+  final Uint8List bytes = utf8.encode(string);
+  final Pointer<Uint8> stringPtr = calloc<Uint8>(bytes.length + 1);
+  stringPtr.asTypedList(bytes.length).setAll(0, bytes);
+  stringPtr[bytes.length] = 0; // terminate with null.
   return stringPtr;
+}
+
+/// Decodes a link, attribute, member or object name returned by HDF5.
+///
+/// Uses UTF-8, the encoding of [strToChar], so a name read from a file can be
+/// passed back to HDF5 to open the object it names.
+String charToName(Pointer<Uint8> charstr) {
+  return charToStringUTF8(charstr, allowMalformed: true);
 }
 
 String charToString(Pointer<Uint8> charstr, {maxLen = -1, H5T_cset_t cset = H5T_cset_t.ASCII}) {
@@ -41,7 +50,8 @@ String charToStringASCII(Pointer<Uint8> charstr, {maxLen = -1}) {
   return String.fromCharCodes(stringList);
 }
 
-String charToStringUTF8(Pointer<Uint8> charstr, {maxLen = -1}) {
+String charToStringUTF8(Pointer<Uint8> charstr,
+    {maxLen = -1, bool allowMalformed = false}) {
   // this uses utf8 encoding.
   int lenStr = 0;
   List<int> uint8List = [];
@@ -49,9 +59,7 @@ String charToStringUTF8(Pointer<Uint8> charstr, {maxLen = -1}) {
     uint8List.add(charstr[lenStr]);
     lenStr++;
   }
-  final utf8Decoder = utf8.decoder;
-  final output = utf8Decoder.convert(uint8List);
-  return output;
+  return utf8.decode(uint8List, allowMalformed: allowMalformed);
 }
 
 void strToArray(String string, Array<Uint8> array, int size) {

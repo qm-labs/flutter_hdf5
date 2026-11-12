@@ -116,7 +116,7 @@ class H5LBindings {
       throw Exception('Failed to get link name by index');
     }
 
-    String linkName = charToString(name);
+    String linkName = charToName(name);
     calloc.free(name);
     return linkName;
   }
